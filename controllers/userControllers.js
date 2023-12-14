@@ -1,13 +1,13 @@
 import User from "../models/User";
 
-export const registerUser = async (req, res) => {
+export const registerUser = async (req, res, next) => {
   try {
     const { name, email, password } = req.body;
 
     let user = await User.findOne({ email });
 
     if (user) {
-      return res.status(400).json({ message: "User have already registered" });
+      throw new Error("User have already registered");
     }
 
     user = await User.create({
@@ -26,7 +26,7 @@ export const registerUser = async (req, res) => {
       token: await user.generateJWT(),
     });
   } catch (err) {
-    return res.status(500).json({ message: "Something went wrong!" });
+    next(err);
   }
 };
 
