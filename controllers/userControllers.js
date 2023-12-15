@@ -93,16 +93,15 @@ const updateProfile = async (req, res, next) => {
 
     user.name = req.body.name || user.name;
     user.email = req.body.email || user.email;
-
-    if (req.body.password || req.body.password.length < 6) {
-      throw new Error("Password must be at least 6 characters");
+    if (req.body.password && req.body.password.length < 6) {
+      throw new Error("Password length must be at least 6 character");
     } else if (req.body.password) {
       user.password = req.body.password;
     }
 
-    const updateUserProfile = await user.save();
+    const updatedUserProfile = await user.save();
 
-    updateUserProfile.json({
+    res.json({
       _id: updatedUserProfile._id,
       avatar: updatedUserProfile.avatar,
       name: updatedUserProfile.name,
@@ -123,19 +122,19 @@ const updateProfilePicture = async (req, res, next) => {
     upload(req, res, async function (err) {
       if (err) {
         const error = new Error(
-          "An unknown error occured when uploading" + err.message
+          "An unknown error occured when uploading " + err.message
         );
         next(error);
       } else {
         if (req.file) {
-          const updatedUser = await User.findByIdAndUpdate(
-            req.user._id,
-            {
-              avatar: req.file.filename,
-            },
-            { new: true }
-          );
-
+          let filename;
+          let updatedUser = await User.findById(req.user._id);
+          filename = updatedUser.avatar;
+          if (filename) {
+            fileRemover(filename);
+          }
+          updatedUser.avatar = req.file.filename;
+          await updatedUser.save();
           res.json({
             _id: updatedUser._id,
             avatar: updatedUser.avatar,
@@ -148,15 +147,24 @@ const updateProfilePicture = async (req, res, next) => {
         } else {
           let filename;
           let updatedUser = await User.findById(req.user._id);
-          filename = updateProfile.avatar;
+          filename = updatedUser.avatar;
           updatedUser.avatar = "";
           await updatedUser.save();
           fileRemover(filename);
+          res.json({
+            _id: updatedUser._id,
+            avatar: updatedUser.avatar,
+            name: updatedUser.name,
+            email: updatedUser.email,
+            verified: updatedUser.verified,
+            admin: updatedUser.admin,
+            token: await updatedUser.generateJWT(),
+          });
         }
       }
     });
   } catch (error) {
-    next(next);
+    next(error);
   }
 };
 
