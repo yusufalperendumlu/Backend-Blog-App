@@ -25,7 +25,7 @@ UserSchema.pre("save", async function (next) {
   return next();
 });
 
-UserSchema.method.generateJWT = async function () {
+UserSchema.methods.generateJWT = async function () {
   return await sign({ id: this._id }, process.env.JWT_SECRET, {
     expiresIn: "30d",
   });
