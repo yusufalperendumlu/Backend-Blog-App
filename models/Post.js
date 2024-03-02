@@ -1,22 +1,27 @@
 import { Schema, model } from "mongoose";
-import { compare, hash } from "bcryptjs";
-import { sign } from "jsonwebtoken";
 
-const UserSchema = new Schema(
+const PostSchema = new Schema(
   {
-    avatar: { type: String, default: "" },
-    name: { type: String, required: true },
-    email: { type: String, required: true },
-    password: { type: String, required: true },
-    verified: { type: Boolean, default: false },
-    verificationCode: { type: String, required: false },
-    admin: { type: Boolean, default: false },
+    title: { type: String, required: true },
+    caption: { type: String, required: true },
+    slug: { type: String, required: true, unique: true },
+    body: { type: Object, required: true },
+    photo: { type: String, required: true },
+    user: { type: Schema.Types.ObjectId, ref: "User" },
+    tags: { type: [String] },
+    categories: [{ type: Schema.Types.ObjectId, ref: "PostCategory" }],
   },
   {
     timestamps: true,
   }
 );
 
-const User = model("User", UserSchema);
+PostSchema.virtual("comments", {
+  ref: "Comment",
+  localField: "_id",
+  foreignField: "postId",
+});
 
-export default User;
+const Post = model("Post", PostSchema);
+
+export default Post;
