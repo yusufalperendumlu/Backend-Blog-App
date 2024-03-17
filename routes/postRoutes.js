@@ -1,10 +1,10 @@
 import express from "express";
-import {} from "../controllers/postControllers";
+import { createPost } from "../controllers/postControllers";
 
-import { authGuard } from "../middleware/authMiddleware";
+import { authGuard, adminGuard } from "../middleware/authMiddleware";
 
 const router = express.Router();
 
-router.post("/");
+router.post("/", authGuard, adminGuard, createPost);
 
 export default router;
