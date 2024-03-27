@@ -1,3 +1,4 @@
+import Comment from "../models/Comment";
 import Post from "../models/Post";
 
 const createComment = async (req, res, next) => {
